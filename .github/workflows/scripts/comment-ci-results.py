@@ -48,20 +48,23 @@ def comment_results(options, results_data):
     exchanges.add(exchange)
     sorted_report_names = list(reversed(sorted(results_data[exchange]["names"], key=sort_report_names)))
     for timerange in results_data[exchange]["timeranges"]:
-      # Detect if we have spot or futures output
-      market_type = None
-      ft_output = None
+      # Detect all trading modes with available data
+      available_trading_modes = []
+      trading_mode_outputs = {}
+
       for mt_candidate in ["spot", "futures"]:
         candidate_path = options.path / "current" / f"backtest-output-{exchange}-{mt_candidate}-{timerange}.txt"
         if candidate_path.exists():
-          market_type = mt_candidate
-          ft_output = candidate_path
-          break
+          available_trading_modes.append(mt_candidate)
+          trading_mode_outputs[mt_candidate] = candidate_path
+
       # Build the header
-      if market_type:
-        comment_body = f"## {exchange.capitalize()} ({market_type}) - {timerange}\n\n"
+      if available_trading_modes:
+        trading_mode_str = ", ".join(available_trading_modes)
+        comment_body = f"## {exchange.capitalize()} ({trading_mode_str}) - {timerange}\n\n"
       else:
         comment_body = f"## {exchange.capitalize()} - {timerange}\n\n"
+
       report_table_header_1 = "| "
       report_table_header_2 = "| --: "
       for report_name in sorted_report_names:
