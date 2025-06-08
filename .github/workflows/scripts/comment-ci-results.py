@@ -194,39 +194,42 @@ def main():
     timeranges = set()
     keys = set()
 
-    # Load raw per-report results
-    for name in sorted(reports_info[exchange]):
-      exchange_results = {}
-      reports_data[exchange][name] = {
-        "results": exchange_results,
-        "sha": reports_info[exchange][name]["sha"],
-      }
+    for trading_mode in reports_info[exchange]:
+      if trading_mode not in reports_data[exchange]:
+        reports_data[exchange][trading_mode] = {}
 
-      results_path = pathlib.Path(reports_info[exchange][name]["path"])
-      for results_file in results_path.rglob(f"ci-results-{exchange}-*"):
-        # Load and merge results
-        exchange_results.update(json.loads(results_file.read_text()))
+      for name in sorted(reports_info[exchange][trading_mode]):
+        exchange_results = {}
+        reports_data[exchange][trading_mode][name] = {
+            "results": exchange_results,
+            "sha": reports_info[exchange][trading_mode][name]["sha"],
+        }
 
-      # Collect timeranges and keys
-      for timerange in exchange_results:
-        timeranges.add(timerange)
-        for key in exchange_results[timerange]:
-          keys.add(key)
+        results_path = pathlib.Path(reports_info[exchange][trading_mode][name]["path"])
+        for results_file in results_path.rglob(f"ci-results-{exchange}-{trading_mode}-*"):
+          exchange_results.update(json.loads(results_file.read_text()))
 
-    # Add 'names' mapping (sha per report name)
+        for timerange in exchange_results:
+          timeranges.add(timerange)
+          for key in exchange_results[timerange]:
+            keys.add(key)
+
+    # Add 'names' mapping (sha per report name), per trading_mode
     reports_data[exchange]["names"] = {}
-    for name in reports_info[exchange]:
-      reports_data[exchange]["names"][name] = reports_info[exchange][name]["sha"]
+    for trading_mode in reports_info[exchange]:
+      for name in reports_info[exchange][trading_mode]:
+        reports_data[exchange]["names"][name] = reports_info[exchange][trading_mode][name]["sha"]
 
-    # Build a merged 'timeranges' view — without touching the original 'results'
+    # Build merged 'timeranges' view, you may want to consider trading_mode here too
     reports_data[exchange]["timeranges"] = {}
     for timerange in sorted(timeranges):
       reports_data[exchange]["timeranges"][timerange] = {}
       for key in sorted(keys):
         reports_data[exchange]["timeranges"][timerange][key] = {}
-        for name in sorted(reports_info[exchange]):
-          value = reports_data[exchange][name]["results"].get(timerange, {}).get(key, "n/a")
-          reports_data[exchange]["timeranges"][timerange][key][name] = value
+        for trading_mode in reports_info[exchange]:
+          for name in sorted(reports_info[exchange][trading_mode]):
+            value = reports_data[exchange][trading_mode][name]["results"].get(timerange, {}).get(key, "n/a")
+            reports_data[exchange]["timeranges"][timerange][key][name] = value
 
   pprint.pprint(reports_data)
 
