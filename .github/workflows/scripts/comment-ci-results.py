@@ -110,7 +110,8 @@ def comment_results(options, results_data):
           label = "Market Change"
           row_line += f" {label} |"
           for report_name in sorted_report_names:
-            value = results_data[exchange]["timeranges"][timerange][key][report_name]
+            value = results_data[exchange]["timeranges"][timerange][key][trading_mode][report_name]
+
             if not isinstance(value, str):
               value = f"{round(value, 4)} %"
             row_line += f" {value} |"
@@ -119,7 +120,7 @@ def comment_results(options, results_data):
           label = "Profit Total"
           row_line += f" {label} |"
           for report_name in sorted_report_names:
-            value = results_data[exchange]["timeranges"][timerange][key][report_name]
+            value = results_data[exchange]["timeranges"][timerange][key][trading_mode][report_name]
             if not isinstance(value, str):
               value = f"{round(value, 4)} %"
             row_line += f" {value} |"
@@ -128,7 +129,7 @@ def comment_results(options, results_data):
           label = "Win Rate"
           row_line += f" {label} |"
           for report_name in sorted_report_names:
-            value = results_data[exchange]["timeranges"][timerange][key][report_name]
+            value = results_data[exchange]["timeranges"][timerange][key][trading_mode][report_name]
             if not isinstance(value, str):
               value = f"{round(value, 4)} %"
             row_line += f" {value} |"
@@ -142,7 +143,7 @@ def comment_results(options, results_data):
             label = key
           row_line += f" {label} |"
           for report_name in sorted_report_names:
-            value = results_data[exchange]["timeranges"][timerange][key][report_name]
+            value = results_data[exchange]["timeranges"][timerange][key][trading_mode][report_name]
             row_line += f" {value} |"
           comment_body += f"{row_line}\n"
       if ft_output:
