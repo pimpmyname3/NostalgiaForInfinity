@@ -369,7 +369,7 @@ jobs:
         with:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
-  
+
   Kucoin-Spot-Backtest-2025:
     needs: Pre-Commit
     runs-on: ubuntu-latest
@@ -436,7 +436,7 @@ jobs:
       - Binance-Spot-Backtest-2025
       - Binance-Futures-Backtest-2025
       - Kucoin-Spot-Backtest-2025
-  
+
     if: always()
     strategy:
       fail-fast: false
