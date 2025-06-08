@@ -167,7 +167,6 @@ def comment_results(options, results_data):
 
 
 def main():
-
   parser = argparse.ArgumentParser()
   parser.add_argument("--repo", required=True, help="The Organization Repository")
   parser.add_argument("path", metavar="PATH", type=pathlib.Path, help="Path where artifacts are extracted")
