@@ -369,24 +369,7 @@ jobs:
         with:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
-
-  Binance-Futures-Merge-Artifacts-2025:
-    runs-on: ubuntu-latest
-    needs: Binance-Futures-Backtest-2025
-    if: always()
-    strategy:
-      fail-fast: false
-      matrix:
-        EXCHANGE: [binance]
-        TRADING_MODE: [futures]
-
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts
-          pattern: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-*
-
+  
   Kucoin-Spot-Backtest-2025:
     needs: Pre-Commit
     runs-on: ubuntu-latest
