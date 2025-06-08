@@ -201,8 +201,8 @@ def main():
       for name in sorted(reports_info[exchange][trading_mode]):
         exchange_results = {}
         reports_data[exchange][trading_mode][name] = {
-            "results": exchange_results,
-            "sha": reports_info[exchange][trading_mode][name]["sha"],
+          "results": exchange_results,
+          "sha": reports_info[exchange][trading_mode][name]["sha"],
         }
 
         results_path = pathlib.Path(reports_info[exchange][trading_mode][name]["path"])
