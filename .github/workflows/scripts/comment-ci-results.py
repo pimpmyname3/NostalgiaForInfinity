@@ -232,8 +232,6 @@ def main():
               value = reports_data[exchange][trading_mode][name]["results"].get(timerange, {}).get(key, "n/a")
               reports_data[exchange]["timeranges"][timerange][key][trading_mode][name] = value
 
-    
-
   pprint.pprint(reports_data)
 
   try:
