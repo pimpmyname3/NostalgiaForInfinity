@@ -175,8 +175,8 @@ def main():
 
   if not options.path.is_dir():
     parser.exit(
-    status=1,
-    message=f"The directory where artifacts should have been extracted, {options.path}, does not exist",
+      status=1,
+      message=f"The directory where artifacts should have been extracted, {options.path}, does not exist",
     )
 
   reports_info_path = options.path / "reports-info.json"
@@ -238,6 +238,7 @@ def main():
       parser.exit(0)
     except GithubException as exc:
       parser.exit(1, message=str(exc))
+
 
 if __name__ == "__main__":
   main()
