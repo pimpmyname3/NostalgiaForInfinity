@@ -145,6 +145,7 @@ def comment_results(options, results_data):
             value = results_data[exchange]["timeranges"][timerange][key][report_name]
             row_line += f" {value} |"
           comment_body += f"{row_line}\n"
+      ft_output = trading_mode_outputs[trading_mode]
       if ft_output:
         comment_body += "\n<details>\n"
         comment_body += "<summary>Detailed Backtest Output (click to see details)</summary>\n"
