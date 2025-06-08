@@ -18,7 +18,8 @@ def sort_report_names(value):
 
 
 def delete_previous_comments(commit, created_comment_ids, exchanges):
-  comment_starts = tuple({f"## {exchange.capitalize()}" for exchange in exchanges})
+  comment_starts = tuple({f"## {exchange.capitalize()} (spot)" for exchange in exchanges} |
+                           {f"## {exchange.capitalize()} (futures)" for exchange in exchanges})
   for comment in commit.get_comments():
     if comment.user.login != "github-actions[bot]":
       # Not a comment made by this bot
@@ -48,20 +49,20 @@ def comment_results(options, results_data):
     exchanges.add(exchange)
     sorted_report_names = list(reversed(sorted(results_data[exchange]["names"], key=sort_report_names)))
     for timerange in results_data[exchange]["timeranges"]:
-      # Detect if we have spot or futures output
-      market_type = None
-      ft_output = None
-      for mt_candidate in ["spot", "futures"]:
-        candidate_path = options.path / "current" / f"backtest-output-{exchange}-{mt_candidate}-{timerange}.txt"
+      # For each timerange, try to detect both spot and futures files
+      modes_found = []
+      for trading_mode in ["spot", "futures"]:
+        candidate_path = options.path / "current" / f"backtest-output-{exchange}-{trading_mode}-{timerange}.txt"
         if candidate_path.exists():
-          market_type = mt_candidate
-          ft_output = candidate_path
-          break
-      # Build the header
-      if market_type:
-        comment_body = f"## {exchange.capitalize()} ({market_type}) - {timerange}\n\n"
-      else:
-        comment_body = f"## {exchange.capitalize()} - {timerange}\n\n"
+          modes_found.append((trading_mode, candidate_path))
+
+        if not modes_found:
+          # If neither found, still create a generic comment without mode
+          comment_body = f"## {exchange.capitalize()} - {timerange}\n\n"
+                continue
+
+        for trading_mode, ft_output in modes_found:
+          comment_body = f"## {exchange.capitalize()} ({trading_mode}) - {timerange}\n\n"
       report_table_header_1 = "| "
       report_table_header_2 = "| --: "
       for report_name in sorted_report_names:
