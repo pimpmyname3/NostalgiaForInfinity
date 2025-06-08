@@ -481,6 +481,7 @@ jobs:
             --branch=main \
             --workflow=tests.yml \
             --exchange=kucoin \
+            --trading-mode=spot \
             --name=kucoin-spot-testrun-artifacts downloaded-results
 
       - name: Download Previous Binance Spot CI Artifacts
@@ -492,6 +493,7 @@ jobs:
             --branch=main \
             --workflow=tests.yml \
             --exchange=binance \
+            --trading-mode=spot \
             --name=binance-spot-testrun-artifacts downloaded-results
 
       - name: Download Previous Binance Futures CI Artifacts
@@ -503,6 +505,7 @@ jobs:
             --branch=main \
             --workflow=tests.yml \
             --exchange=binance \
+            --trading-mode=futures \
             --name=binance-futures-testrun-artifacts downloaded-results
 
       - name: Download Current Binance Futures CI Artifacts
@@ -545,10 +548,6 @@ jobs:
           find downloaded-results/ -type f -iname *.txt -exec sed -i 's/DAY BREAKDOWN/\n## DAY BREAKDOWN\n/g' {} +
           find downloaded-results/ -type f -iname *.txt -exec sed -i 's/SUMMARY METRICS/\n## SUMMARY METRICS\n/g' {} +
           find downloaded-results/ -type f -iname *.txt -exec sed -i 's/STRATEGY SUMMARY/\n## STRATEGY SUMMARY\n/g' {} +
-          tree
-          cat downloaded-results/current/ci-results-binance-futures-*.json
-          cat downloaded-results/current/ci-results-binance-futures-*.json
-          cat downloaded-results/reports-info.json
 
       - name: Comment CI Results
         env:
