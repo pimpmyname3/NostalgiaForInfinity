@@ -105,23 +105,6 @@ jobs:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
 
-  Binance-Spot-Merge-Artifacts-2024:
-    runs-on: ubuntu-latest
-    needs: Binance-Spot-Backtest-2024
-    if: always()
-    strategy:
-      fail-fast: false
-      matrix:
-        EXCHANGE: [binance]
-        TRADING_MODE: [spot]
-
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts
-          pattern: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-*
-
   Binance-Futures-Backtest-2024:
     needs: Pre-Commit
     runs-on: ubuntu-latest
@@ -191,16 +174,6 @@ jobs:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
 
-  Binance-Futures-Merge-Artifacts-2024:
-    runs-on: ubuntu-latest
-    needs: Binance-Futures-Backtest-2024
-    if: always()
-    strategy:
-      fail-fast: false
-      matrix:
-        EXCHANGE: [binance]
-        TRADING_MODE: [futures]
-
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
@@ -264,23 +237,6 @@ jobs:
         with:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
-
-  Kucoin-Spot-Merge-Artifacts-2024:
-    runs-on: ubuntu-latest
-    needs: Kucoin-Spot-Backtest-2024
-    if: always()
-    strategy:
-      fail-fast: false
-      matrix:
-        EXCHANGE: [kucoin]
-        TRADING_MODE: [spot]
-
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts
-          pattern: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-*
 
   # Backtest 2025
   Binance-Spot-Backtest-2025:
@@ -351,23 +307,6 @@ jobs:
         with:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
-
-  Binance-Spot-Merge-Artifacts-2025:
-    runs-on: ubuntu-latest
-    needs: Binance-Spot-Backtest-2025
-    if: always()
-    strategy:
-      fail-fast: false
-      matrix:
-        EXCHANGE: [binance]
-        TRADING_MODE: [spot]
-
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts
-          pattern: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-*
 
   Binance-Futures-Backtest-2025:
     needs: Pre-Commit
@@ -512,16 +451,25 @@ jobs:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
 
-  Kucoin-Spot-Merge-Artifacts-2025:
+  Merge-All-Artifacts:
     runs-on: ubuntu-latest
-    needs: Kucoin-Spot-Backtest-2025
+    needs:
+      - Binance-Spot-Backtest-2024
+      - Binance-Futures-Backtest-2024
+      - Kucoin-Spot-Backtest-2024
+      - Binance-Spot-Backtest-2025
+      - Binance-Futures-Backtest-2025
+      - Kucoin-Spot-Backtest-2025
+  
     if: always()
     strategy:
       fail-fast: false
       matrix:
-        EXCHANGE: [kucoin]
-        TRADING_MODE: [spot]
-
+        EXCHANGE: [binance, kucoin]
+        TRADING_MODE: [spot, futures]
+        exclude:
+          - EXCHANGE: kucoin
+            TRADING_MODE: futures
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
@@ -531,13 +479,7 @@ jobs:
 
   Comment-CI-Results:
     runs-on: ubuntu-latest
-    needs:
-      - Binance-Futures-Merge-Artifacts-2024
-      - Binance-Futures-Merge-Artifacts-2025
-      - Binance-Spot-Merge-Artifacts-2024
-      - Binance-Spot-Merge-Artifacts-2025
-      - Kucoin-Spot-Merge-Artifacts-2024
-      - Kucoin-Spot-Merge-Artifacts-2025
+    needs: Merge-All-Artifacts
     if: always()
     permissions:
       contents: write
