@@ -58,10 +58,10 @@ def comment_results(options, results_data):
         if candidate_path.exists():
           modes_found.append((trading_mode, candidate_path))
 
-        if not modes_found:
-          # If neither found, still create a generic comment without mode
-          comment_body = f"## {exchange.capitalize()} - {timerange}\n\n"
-          continue
+      if not modes_found:
+        # If neither found, still create a generic comment without mode
+        comment_body = f"## {exchange.capitalize()} - {timerange} UNKNOWN\n\n"
+        continue
 
     for trading_mode, ft_output in modes_found:
       comment_body = f"## {exchange.capitalize()} ({trading_mode}) - {timerange}\n\n"
@@ -220,7 +220,7 @@ def main():
       for name in reports_info[exchange][trading_mode]:
         reports_data[exchange]["names"][name] = reports_info[exchange][trading_mode][name]["sha"]
 
-    # Build merged 'timeranges' view, you may want to consider trading_mode here too
+    # Build merged
     reports_data[exchange]["timeranges"] = {}
     for timerange in sorted(timeranges):
       reports_data[exchange]["timeranges"][timerange] = {}
@@ -229,7 +229,8 @@ def main():
         for trading_mode in reports_info[exchange]:
           for name in sorted(reports_info[exchange][trading_mode]):
             value = reports_data[exchange][trading_mode][name]["results"].get(timerange, {}).get(key, "n/a")
-            reports_data[exchange]["timeranges"][timerange][key][name] = value
+            reports_data[exchange]["timeranges"][timerange][key][trading_mode][name] = value
+            
 
   pprint.pprint(reports_data)
 
