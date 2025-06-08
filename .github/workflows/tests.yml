@@ -546,6 +546,8 @@ jobs:
           find downloaded-results/ -type f -iname *.txt -exec sed -i 's/SUMMARY METRICS/\n## SUMMARY METRICS\n/g' {} +
           find downloaded-results/ -type f -iname *.txt -exec sed -i 's/STRATEGY SUMMARY/\n## STRATEGY SUMMARY\n/g' {} +
           tree
+          cat downloaded-results/current/ci-results-binance-futures-*.json
+          cat downloaded-results/current/ci-results-binance-futures-*.json
 
       - name: Comment CI Results
         env:
