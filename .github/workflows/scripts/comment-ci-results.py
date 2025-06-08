@@ -57,6 +57,7 @@ def comment_results(options, results_data):
         if candidate_path.exists():
           available_trading_modes.append(mt_candidate)
           trading_mode_outputs[mt_candidate] = candidate_path
+          ft_output = candidate_path
 
       # Build the header
       if available_trading_modes:
