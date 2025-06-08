@@ -61,8 +61,8 @@ def comment_results(options, results_data):
           comment_body = f"## {exchange.capitalize()} - {timerange}\n\n"
           continue
 
-        for trading_mode, ft_output in modes_found:
-          comment_body = f"## {exchange.capitalize()} ({trading_mode}) - {timerange}\n\n"
+    for trading_mode, ft_output in modes_found:
+      comment_body = f"## {exchange.capitalize()} ({trading_mode}) - {timerange}\n\n"
       report_table_header_1 = "| "
       report_table_header_2 = "| --: "
       for report_name in sorted_report_names:
