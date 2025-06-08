@@ -59,7 +59,7 @@ def comment_results(options, results_data):
         if not modes_found:
           # If neither found, still create a generic comment without mode
           comment_body = f"## {exchange.capitalize()} - {timerange}\n\n"
-                continue
+          continue
 
         for trading_mode, ft_output in modes_found:
           comment_body = f"## {exchange.capitalize()} ({trading_mode}) - {timerange}\n\n"
@@ -165,6 +165,7 @@ def comment_results(options, results_data):
 
 
 def main():
+
   parser = argparse.ArgumentParser()
   parser.add_argument("--repo", required=True, help="The Organization Repository")
   parser.add_argument("path", metavar="PATH", type=pathlib.Path, help="Path where artifacts are extracted")
