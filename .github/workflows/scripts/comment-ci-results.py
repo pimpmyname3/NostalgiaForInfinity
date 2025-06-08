@@ -18,8 +18,10 @@ def sort_report_names(value):
 
 
 def delete_previous_comments(commit, created_comment_ids, exchanges):
-  comment_starts = tuple({f"## {exchange.capitalize()} (spot)" for exchange in exchanges} |
-                           {f"## {exchange.capitalize()} (futures)" for exchange in exchanges})
+  comment_starts = tuple(
+    {f"## {exchange.capitalize()} (spot)" for exchange in exchanges}
+    | {f"## {exchange.capitalize()} (futures)" for exchange in exchanges}
+  )
   for comment in commit.get_comments():
     if comment.user.login != "github-actions[bot]":
       # Not a comment made by this bot
