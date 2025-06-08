@@ -174,13 +174,6 @@ jobs:
           name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-${{ matrix.TIMERANGE }}
           path: artifacts/
 
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts
-          pattern: ${{ matrix.EXCHANGE }}-${{ matrix.TRADING_MODE }}-testrun-artifacts-*
-
   Kucoin-Spot-Backtest-2024:
     needs: Pre-Commit
     runs-on: ubuntu-latest
