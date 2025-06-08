@@ -531,7 +531,13 @@ jobs:
 
   Comment-CI-Results:
     runs-on: ubuntu-latest
-    needs: Merge-Artifacts
+    needs:
+      - Binance-Futures-Merge-Artifacts-2024
+      - Binance-Futures-Merge-Artifacts-2025      
+      - Binance-Spot-Merge-Artifacts-2024
+      - Binance-Spot-Merge-Artifacts-2025
+      - Kucoin-Spot-Merge-Artifacts-2024
+      - Kucoin-Spot-Merge-Artifacts-2025 
     if: always()
     permissions:
       contents: write
