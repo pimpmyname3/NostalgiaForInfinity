@@ -7,6 +7,59 @@ on:
       - 'NostalgiaForInfinityX7.py'
 
 jobs:
+  Proxy-Check:
+    runs-on: ubuntu-latest
+
+    outputs:
+      spot_ok: ${{ steps.spot.outputs.ok }}
+      futures_ok: ${{ steps.futures.outputs.ok }}
+      spot_msg: ${{ steps.spot.outputs.msg }}
+      futures_msg: ${{ steps.futures.outputs.msg }}
+
+    steps:
+      - name: Check Binance Spot proxy
+        id: spot
+        env:
+          PROXY: ${{ secrets.FREQTRADE_PROXY }}
+        run: |
+          echo "Checking Binance Spot..."
+
+          RESPONSE=$(curl -s -x "$PROXY" --max-time 15 https://api.binance.com/api/v3/time)
+          echo "$RESPONSE"
+
+          if echo "$RESPONSE" | grep -qi "restricted location"; then
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "msg=restricted location" >> $GITHUB_OUTPUT
+          elif echo "$RESPONSE" | grep -qi "code"; then
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "msg=binance error response" >> $GITHUB_OUTPUT
+          else
+            echo "ok=true" >> $GITHUB_OUTPUT
+            echo "msg=ok" >> $GITHUB_OUTPUT
+          fi
+
+
+      - name: Check Binance Futures proxy
+        id: futures
+        env:
+          PROXY2: ${{ secrets.FREQTRADE_PROXY2 }}
+        run: |
+          echo "Checking Binance Futures..."
+
+          RESPONSE=$(curl -s -x "$PROXY2" --max-time 15 https://fapi.binance.com/fapi/v1/time)
+          echo "$RESPONSE"
+
+          if echo "$RESPONSE" | grep -qi "restricted location"; then
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "msg=restricted location" >> $GITHUB_OUTPUT
+          elif echo "$RESPONSE" | grep -qi "code"; then
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "msg=binance error response" >> $GITHUB_OUTPUT
+          else
+            echo "ok=true" >> $GITHUB_OUTPUT
+            echo "msg=ok" >> $GITHUB_OUTPUT
+          fi
+
   # Backtest Jobs
   Backtest-Kucoin-Spot:
     runs-on: ubuntu-latest
@@ -14,32 +67,6 @@ jobs:
       fail-fast: false
       matrix:
         TIMERANGE:
-          - 20260301-20260401
-          - 20260201-20260301
-          - 20260101-20260201
-          - 20251201-20260101
-          - 20251101-20251201
-          - 20251001-20251101
-          - 20250901-20251001
-          - 20250801-20250901
-          - 20250701-20250801
-          - 20250601-20250701
-          - 20250501-20250601
-          - 20250401-20250501
-          - 20250301-20250401
-          - 20250201-20250301
-          - 20250101-20250201
-          - 20241201-20250101
-          - 20241101-20241201
-          - 20241001-20241101
-          - 20240901-20241001
-          - 20240801-20240901
-          - 20240701-20240801
-          - 20240601-20240701
-          - 20240501-20240601
-          - 20240401-20240501
-          - 20240301-20240401
-          - 20240201-20240301
           - 20240101-20240201
     steps:
       - uses: actions/checkout@v6
@@ -86,6 +113,8 @@ jobs:
           path: artifacts/
 
   Backtest-Binance-Spot:
+    needs: Proxy-Check
+    if: needs.Proxy-Check.outputs.spot_ok == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -171,6 +200,8 @@ jobs:
           path: artifacts/
 
   Backtest-Binance-Futures:
+    needs: Proxy-Check
+    if: needs.Proxy-Check.outputs.futures_ok == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -258,6 +289,7 @@ jobs:
   Merge-Artifacts:
     if: always()
     needs:
+      - Proxy-Check
       - Backtest-Kucoin-Spot
       - Backtest-Binance-Spot
       - Backtest-Binance-Futures
