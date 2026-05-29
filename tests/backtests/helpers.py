@@ -54,6 +54,7 @@ class ProcessResult:
     return message + "\n"
 
 
+
 class Backtest:
   def __init__(self, request, exchange=None, trading_mode=None):
     self.request = request
