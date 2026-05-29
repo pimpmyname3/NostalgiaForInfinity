@@ -1,6 +1,8 @@
 name: Changed Files Pre-Commit Check
 
 on: [push, pull_request]
+permissions:
+  contents: write
 
 jobs:
   Pre-Commit:
@@ -35,10 +37,22 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
-      - name: Run pre-commit on all files
+      - name: Check ALL Files On Branch
         if: github.event_name != 'pull_request'
         run: pre-commit run --all-files
 
-      - name: Run pre-commit on changed files
+      - name: Run pre-commit (apply fixes) for PR
         if: github.event_name == 'pull_request'
-        run: pre-commit run --files ${{ steps.changed-files.outputs.repo_files }}
+        run: |
+          pre-commit run --files ${{ steps.changed-files.outputs.repo_files }} || true
+
+      - name: Commit autofixes for PR
+        if: github.event_name == 'pull_request'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "apply pre-commit fixes"
+
+      - name: Verify pre-commit for PR
+        if: github.event_name == 'pull_request'
+        run: |
+          pre-commit run --files ${{ steps.changed-files.outputs.repo_files }}
