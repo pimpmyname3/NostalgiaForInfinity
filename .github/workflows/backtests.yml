@@ -25,7 +25,7 @@ jobs:
           echo "Checking Binance Spot..."
 
           RESPONSE=$(curl -s -x "$PROXY" --max-time 15 https://api.binance.com/api/v3/time)
-          echo "$RESPONSE"
+          echo "$RESPONSE t"
 
           if echo "$RESPONSE" | grep -qi "restricted location"; then
             echo "ok=false" >> $GITHUB_OUTPUT
