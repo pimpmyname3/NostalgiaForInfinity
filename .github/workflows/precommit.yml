@@ -47,12 +47,17 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
-      - name: Run pre-commit on all files
-        if: github.event_name != 'pull_request'
+      - name: Run pre-commit
         run: |
-          pre-commit autoupdate
-          pre-commit install
-          pre-commit run --all-files --color always || true
+          pre-commit run --all-files || true
+
+      - name: Commit fixes
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "apply pre-commit fixes"
+
+      - name: Verify
+        run: pre-commit run --all-files
 
       - name: Run pre-commit on changed files
         if: github.event_name == 'pull_request'
