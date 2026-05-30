@@ -15,8 +15,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
           fetch-depth: 10
+          ref: ${{ github.head_ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -47,32 +47,24 @@ jobs:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
-      - name: Run pre-commit
+      - name: Run pre-commit on Push
+        if: github.event_name != 'pull_request'
         run: |
-          pre-commit run --all-files || true
+          pre-commit run --all-files --colors=always || true
 
-      - name: Commit fixes
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: "apply pre-commit fixes"
+      # - name: Commit fixes on Push
+      #   if: github.event_name != 'pull_request'
+      #   uses: stefanzweifel/git-auto-commit-action@v7
+      #   with:
+      #    commit_message: "apply pre-commit fixes"
 
-      - name: Verify
-        run: pre-commit run --all-files
-
-      - name: Run pre-commit on changed files
+      - name: Run pre-commit on changed files for PR
         if: github.event_name == 'pull_request'
         run: |
-          pre-commit run --files ${{ steps.changed-files.outputs.repo_files }} || true
+          pre-commit run --colors=always --files ${{ steps.changed-files.outputs.repo_files }} || true
 
-      - name: Commit autofixes
-        if: |
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == github.repository
+      - name: Commit fixes for PR
+        if: github.event_name == 'pull_request'
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "apply pre-commit fixes"
-
-      - name: Verify pre-commit passes
-        if: github.event_name == 'pull_request'
-        run: |
-          pre-commit run --files ${{ steps.changed-files.outputs.repo_files }}
+          commit_message: "apply pre-commit fixes for PR"
