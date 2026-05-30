@@ -69,11 +69,11 @@ class Backtest:
     trading_mode=None,
   ):
     if exchange is None:
-      exchange = self.exchange
+    exchange = self.exchange
     if exchange is None:
       raise RuntimeError(f"No 'exchange' was passed when instantiating {self.__class__.__name__} or when calling it")
 
-    tmp_path = self.request.getfixturevalue("tmp_path")
+      tmp_path = self.request.getfixturevalue("tmp_path")
 
     # ---- Setup export directory and filename (per Freqtrade docs) ----
     export_dir = tmp_path / "backtest_results"
