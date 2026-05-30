@@ -75,7 +75,7 @@ class Backtest:
 
     tmp_path = self.request.getfixturevalue("tmp_path")
 
-    # ---- Setup export directory and filename (per Freqtrade docs) ----
+    #---- Setup export directory and filename (per Freqtrade docs) ----
     export_dir = tmp_path / "backtest_results"
     export_dir.mkdir(parents=True, exist_ok=True)
     json_filename = f"backtest-result-{exchange}-{trading_mode}-{start_date}-{end_date}.json"
@@ -165,7 +165,7 @@ class Backtest:
       raw_data=results_data,
     )
 
-    # ---- Write CI JSON summary ----
+    #---- Write CI JSON summary ----
     if self.request.config.option.artifacts_path:
       ci_json_path = artifacts_path / f"ci-results-{exchange}-{trading_mode}-{start_date}-{end_date}.json"
       summary = {f"{start_date}-{end_date}": backtest_results._stats_pct}
@@ -192,7 +192,7 @@ class BacktestResults:
     strategy_data = self.raw_data.get("strategy")
 
     if isinstance(strategy_data, dict):
-      # Expected structure: {"strategy": {"NostalgiaForInfinityX7": {...}}}
+      #Expected structure: {"strategy": {"NostalgiaForInfinityX7": {...}}}
       return strategy_data.get("NostalgiaForInfinityX7")
 
     elif isinstance(strategy_data, str) and strategy_data == "NostalgiaForInfinityX7":
