@@ -49,10 +49,10 @@ jobs:
 
       - name: Run pre-commit on all files
         if: github.event_name != 'pull_request'
-        run:
-          pre-commit autoupdate \
-          pre-commit install \
-          pre-commit run --all-files || true \
+        run: |
+          pre-commit autoupdate
+          pre-commit install
+          pre-commit run --all-files --color always || true
 
       - name: Run pre-commit on changed files
         if: github.event_name == 'pull_request'
