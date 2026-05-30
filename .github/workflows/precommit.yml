@@ -49,8 +49,10 @@ jobs:
 
       - name: Run pre-commit on Push
         if: github.event_name != 'pull_request'
+        env:
+          PRE_COMMIT_COLOR: always
         run: |
-          pre-commit run --all-files --colors=always || true
+          pre-commit run --all-files || true
 
       # - name: Commit fixes on Push
       #   if: github.event_name != 'pull_request'
@@ -60,8 +62,10 @@ jobs:
 
       - name: Run pre-commit on changed files for PR
         if: github.event_name == 'pull_request'
+        env:
+          PRE_COMMIT_COLOR: always
         run: |
-          pre-commit run --colors=always --files ${{ steps.changed-files.outputs.repo_files }} || true
+          pre-commit run --files ${{ steps.changed-files.outputs.repo_files }} || true
 
       - name: Commit fixes for PR
         if: github.event_name == 'pull_request'
