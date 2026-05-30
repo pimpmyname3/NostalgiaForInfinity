@@ -1,26 +1,35 @@
 name: Changed Files Pre-Commit Check
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+
 permissions:
   contents: write
 
 jobs:
-  Pre-Commit:
+  pre-commit:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout repository
+        uses: actions/checkout@v6
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
           fetch-depth: 10
-      - uses: actions/setup-python@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-          cache: 'pip'
+          cache: pip
 
       - name: Install pre-commit
         run: pip install pre-commit
 
       - id: changed-files
-        name: Check changed files
+        name: Determine changed files
+        if: github.event_name == 'pull_request'
         uses: dorny/paths-filter@v4
         with:
           token: ${{ github.token }}
@@ -29,30 +38,33 @@ jobs:
             repo:
               - added|modified: ['**']
 
-      - name: Cache pre-commit environments
-        run: echo "PY=$(python --version --version | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+      - name: Generate cache key
+        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
 
-      - uses: actions/cache@v5
+      - name: Cache pre-commit environments
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
-      - name: Check ALL Files On Branch
+      - name: Run pre-commit on all files
         if: github.event_name != 'pull_request'
-        run: pre-commit run --all-files || true
+        run: pre-commit run --all-files
 
-      - name: Run pre-commit (apply fixes) for PR
+      - name: Run pre-commit on changed files
         if: github.event_name == 'pull_request'
         run: |
           pre-commit run --files ${{ steps.changed-files.outputs.repo_files }} || true
 
-      - name: Commit autofixes for PR
-        if: github.event_name == 'pull_request'
+      - name: Commit autofixes
+        if: |
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "apply pre-commit fixes"
 
-      - name: Verify pre-commit for PR
+      - name: Verify pre-commit passes
         if: github.event_name == 'pull_request'
         run: |
           pre-commit run --files ${{ steps.changed-files.outputs.repo_files }}
