@@ -12,6 +12,7 @@ from tests.conftest import REPO_ROOT
 log = logging.getLogger(__name__)
 
 
+
 @attr.s(frozen=True)
 class ProcessResult:
   """
