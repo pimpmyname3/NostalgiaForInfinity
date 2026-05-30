@@ -77,7 +77,7 @@ jobs:
       - name: Run pre-commit on Push
         if: github.event_name != 'pull_request'
         run: |
-          pre-commit run --all-files || true
+          pre-commit run --all-files
 
       # - name: Commit fixes on Push
       #   if: github.event_name != 'pull_request'
