@@ -80,11 +80,15 @@ class Backtest:
     export_dir.mkdir(parents=True, exist_ok=True)
     json_filename = f"backtest-result-{exchange}-{trading_mode}-{start_date}-{end_date}.json"
 
+    
+
+    
     exchange_config = f"configs/pairlist-backtest-static-{exchange}-{trading_mode}-usdt.json"
 
+    
     # ---- Build cmdline ----
     cmdline = [
-      "freqtrade",
+       "freqtrade",
       "backtesting",
       "--strategy=NostalgiaForInfinityX7",
       f"--timerange={start_date}-{end_date}",
