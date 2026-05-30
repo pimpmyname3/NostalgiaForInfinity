@@ -2987,7 +2987,7 @@ class NostalgiaForInfinityX7(IStrategy):
 
     return list(informative_pairs)
 
-  #def chaikin_money_flow(dataframe, period=21):
+  # def chaikin_money_flow(dataframe, period=21):
   #  mfm = ((dataframe["close"] - dataframe["low"]) - (dataframe["high"] - dataframe["close"])) / (
   #      dataframe["high"] - dataframe["low"]
   #  )
@@ -2997,11 +2997,11 @@ class NostalgiaForInfinityX7(IStrategy):
   @staticmethod
   def chaikin_money_flow(high, low, close, volume, timeperiod=20):
     hl_range = (high - low).replace(0, np.nan)
-    mfm = (((close - low) - (high - close)) / hl_range)
+    mfm = ((close - low) - (high - close)) / hl_range
 
     mfv = mfm * volume
 
-    cmf = (mfv.rolling(timeperiod).sum() / volume.rolling(timeperiod).sum())
+    cmf = mfv.rolling(timeperiod).sum() / volume.rolling(timeperiod).sum()
 
     return cmf.fillna(0.0)
 
@@ -3010,24 +3010,24 @@ class NostalgiaForInfinityX7(IStrategy):
 
     # Invalid indicator output
     if series is None:
-        return pd.Series(fill_value, index=index, dtype=np.float64)
+      return pd.Series(fill_value, index=index, dtype=np.float64)
 
     # Convert arrays / lists to Series
     if not isinstance(series, pd.Series):
-        series = pd.Series(series)
+      series = pd.Series(series)
 
     # Length mismatch protection
     if len(series) != len(index):
-        return pd.Series(fill_value, index=index, dtype=np.float64)
+      return pd.Series(fill_value, index=index, dtype=np.float64)
 
     # FORCE POSITIONAL ALIGNMENT
     # instead of label-based reindex
     if not series.index.equals(index):
-        series.index = index
+      series.index = index
 
     # Ensure float64
     if series.dtype != np.float64:
-        series = series.astype(np.float64, copy=False)
+      series = series.astype(np.float64, copy=False)
 
     return series
 
@@ -3071,40 +3071,42 @@ class NostalgiaForInfinityX7(IStrategy):
     # Bollinger Bandwidth %
     bbb = self.safe_series(((bb_upper - bb_lower) / pd.Series(bb_middle, index=idx).replace(0, np.nan)) * 100.0, idx)
 
-    #bbands = ta.BBANDS(close, timeperiod=20)
-    #bbl = self.safe_series(bbands["BBL_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
-    #bbu = self.safe_series(bbands["BBU_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
-    #bbb = self.safe_series(bbands["BBB_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbands = ta.BBANDS(close, timeperiod=20)
+    # bbl = self.safe_series(bbands["BBL_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbu = self.safe_series(bbands["BBU_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbb = self.safe_series(bbands["BBB_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
 
     # AROON
     aroon_down, aroon_up = ta.AROON(high, low, timeperiod=14)
 
     aroon_up = self.safe_series(pd.Series(aroon_up, index=idx, dtype=np.float64), idx)
     aroon_down = self.safe_series(pd.Series(aroon_down, index=idx, dtype=np.float64), idx)
-    #aroon = ta.AROON(high, low, timeperiod=14)
+    # aroon = ta.AROON(high, low, timeperiod=14)
 
-    #aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
-    #aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
 
     # STOCH
     try:
-      stoch_k, stoch_d = ta.STOCH(high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+      stoch_k, stoch_d = ta.STOCH(
+        high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0
+      )
       stoch_k = self.safe_series(pd.Series(stoch_k, index=idx), idx)
     except Exception:
       stoch_k = pd.Series(np.nan, index=idx, dtype=np.float64)
 
     # STOCH RSI
-    stochrsi_k, stochrsi_d = ta.STOCHRSI(close,timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
+    stochrsi_k, stochrsi_d = ta.STOCHRSI(close, timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
     stochrsi_k = self.safe_series(pd.Series(stochrsi_k, index=idx, dtype=np.float64), idx)
 
-    #stochrsi = ta.STOCHRSI(close)
-    #stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
+    # stochrsi = ta.STOCHRSI(close)
+    # stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
 
     # MFI
     mfi_14 = self.safe_series(ta.MFI(high, low, close, volume, timeperiod=14), idx)
 
     # CMF
-    #cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
+    # cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
     cmf_20 = self.safe_series(self.chaikin_money_flow(high, low, close, volume, timeperiod=20), idx)
 
     # WILLR
@@ -3252,39 +3254,41 @@ class NostalgiaForInfinityX7(IStrategy):
 
     # Bollinger Bandwidth %
     bbb = self.safe_series(((bb_upper - bb_lower) / pd.Series(bb_middle, index=idx).replace(0, np.nan)) * 100.0, idx)
-    #bbands = ta.BBANDS(close, timeperiod=20)
+    # bbands = ta.BBANDS(close, timeperiod=20)
 
-    #bbl_20 = self.safe_series(bbands["BBL_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
-    #bbu_20 = self.safe_series(bbands["BBU_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
-    #bbb_20 = self.safe_series(bbands["BBB_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbl_20 = self.safe_series(bbands["BBL_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbu_20 = self.safe_series(bbands["BBU_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbb_20 = self.safe_series(bbands["BBB_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
 
     # AROON
     aroon_down, aroon_up = ta.AROON(high, low, timeperiod=14)
 
     aroon_up = self.safe_series(pd.Series(aroon_up, index=idx, dtype=np.float64), idx)
     aroon_down = self.safe_series(pd.Series(aroon_down, index=idx, dtype=np.float64), idx)
-    #aroon = ta.AROON(high, low, timeperiod=14)
-    #aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
-    #aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon = ta.AROON(high, low, timeperiod=14)
+    # aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
 
     # STOCH
     try:
-      stoch_k, stoch_d = ta.STOCH(high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+      stoch_k, stoch_d = ta.STOCH(
+        high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0
+      )
       stoch_k = self.safe_series(pd.Series(stoch_k, index=idx), idx)
     except Exception:
       stoch_k = pd.Series(np.nan, index=idx, dtype=np.float64)
-    #try:
+    # try:
     #  stoch = ta.STOCH(high, low, close)
     #  stoch_k = self.safe_series(stoch["STOCHk_14_3_3"] if isinstance(stoch, pd.DataFrame) else None, idx)
-    #except Exception:
+    # except Exception:
     #  stoch_k = pd.Series(np.nan, index=idx, dtype=np.float64)
 
     # STOCH RSI
-    stochrsi_k, stochrsi_d = ta.STOCHRSI(close,timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
+    stochrsi_k, stochrsi_d = ta.STOCHRSI(close, timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
     stochrsi_k = self.safe_series(pd.Series(stochrsi_k, index=idx, dtype=np.float64), idx)
 
-    #stochrsi = ta.STOCHRSI(close)
-    #stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
+    # stochrsi = ta.STOCHRSI(close)
+    # stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
 
     # KST
     kst = pta.kst(close)
@@ -3296,7 +3300,7 @@ class NostalgiaForInfinityX7(IStrategy):
     mfi_14 = self.safe_series(ta.MFI(high, low, close, volume, timeperiod=14), idx)
 
     # CMF
-    #cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
+    # cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
     cmf_20 = self.safe_series(self.chaikin_money_flow(high, low, close, volume, timeperiod=20), idx)
 
     # Williams %R
@@ -3474,38 +3478,40 @@ class NostalgiaForInfinityX7(IStrategy):
 
     # Bollinger Bandwidth %
     bbb = self.safe_series(((bb_upper - bb_lower) / pd.Series(bb_middle, index=idx).replace(0, np.nan)) * 100.0, idx)
-    #bbands = ta.BBANDS(close, timeperiod=20)
+    # bbands = ta.BBANDS(close, timeperiod=20)
 
-    #bbl_20 = self.safe_series(bbands["BBL_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
-    #bbu_20 = self.safe_series(bbands["BBU_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
-    #bbb_20 = self.safe_series(bbands["BBB_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbl_20 = self.safe_series(bbands["BBL_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbu_20 = self.safe_series(bbands["BBU_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
+    # bbb_20 = self.safe_series(bbands["BBB_20_2.0"] if isinstance(bbands, pd.DataFrame) else None, idx)
 
     # AROON
     aroon_down, aroon_up = ta.AROON(high, low, timeperiod=14)
 
     aroon_up = self.safe_series(pd.Series(aroon_up, index=idx, dtype=np.float64), idx)
     aroon_down = self.safe_series(pd.Series(aroon_down, index=idx, dtype=np.float64), idx)
-    #aroon = ta.AROON(high, low, timeperiod=14)
-    #aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
-    #aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon = ta.AROON(high, low, timeperiod=14)
+    # aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
 
     # STOCH
     try:
-      stoch_k, stoch_d = ta.STOCH(high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+      stoch_k, stoch_d = ta.STOCH(
+        high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0
+      )
       stoch_k = self.safe_series(pd.Series(stoch_k, index=idx), idx)
     except Exception:
       stoch_k = pd.Series(np.nan, index=idx, dtype=np.float64)
-    #try:
+    # try:
     #  stoch = ta.STOCH(high, low, close)
     #  stoch_k = self.safe_series(stoch["STOCHk_14_3_3"] if isinstance(stoch, pd.DataFrame) else None, idx)
-    #except Exception:
+    # except Exception:
     #  stoch_k = pd.Series(np.nan, index=idx, dtype=np.float64)
 
     # STOCH RSI
-    stochrsi_k, stochrsi_d = ta.STOCHRSI(close,timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
+    stochrsi_k, stochrsi_d = ta.STOCHRSI(close, timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
     stochrsi_k = self.safe_series(pd.Series(stochrsi_k, index=idx, dtype=np.float64), idx)
-    #stochrsi = ta.STOCHRSI(close)
-    #stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
+    # stochrsi = ta.STOCHRSI(close)
+    # stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
 
     # KST
     kst = pta.kst(close)
@@ -3517,7 +3523,7 @@ class NostalgiaForInfinityX7(IStrategy):
     mfi_14 = self.safe_series(ta.MFI(high, low, close, volume, timeperiod=14), idx)
 
     # CMF
-    #cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
+    # cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
     cmf_20 = self.safe_series(self.chaikin_money_flow(high, low, close, volume, timeperiod=20), idx)
 
     # Williams %R
@@ -3690,34 +3696,36 @@ class NostalgiaForInfinityX7(IStrategy):
 
     aroon_up = self.safe_series(pd.Series(aroon_up, index=idx, dtype=np.float64), idx)
     aroon_down = self.safe_series(pd.Series(aroon_down, index=idx, dtype=np.float64), idx)
-    #aroon = ta.AROON(high, low, timeperiod=14)
-    #aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
-    #aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon = ta.AROON(high, low, timeperiod=14)
+    # aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
+    # aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, idx)
 
     # STOCH
     try:
-      stoch_k, stoch_d = ta.STOCH(high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+      stoch_k, stoch_d = ta.STOCH(
+        high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0
+      )
       stoch_k = self.safe_series(pd.Series(stoch_k, index=idx), idx)
     except Exception:
       stoch_k = pd.Series(np.nan, index=idx, dtype=np.float64)
 
-    #try:
+    # try:
     #  stoch = ta.STOCH(high, low, close)
     #  stoch_k = self.safe_series(stoch["STOCHk_14_3_3"] if isinstance(stoch, pd.DataFrame) else None, idx)
-    #except Exception:
+    # except Exception:
     #  stoch_k = pd.Series(np.nan, index=idx, dtype=np.float64)
 
     # STOCH RSI
-    stochrsi_k, stochrsi_d = ta.STOCHRSI(close,timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
+    stochrsi_k, stochrsi_d = ta.STOCHRSI(close, timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
     stochrsi_k = self.safe_series(pd.Series(stochrsi_k, index=idx, dtype=np.float64), idx)
-    #stochrsi = ta.STOCHRSI(close)
-    #stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
+    # stochrsi = ta.STOCHRSI(close)
+    # stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, idx)
 
     # MFI
     mfi_14 = self.safe_series(ta.MFI(high, low, close, volume, timeperiod=14), idx)
 
     # CMF
-    #cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
+    # cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), idx)
     cmf_20 = self.safe_series(self.chaikin_money_flow(high, low, close, volume, timeperiod=20), idx)
 
     # Williams %R
@@ -3873,26 +3881,28 @@ class NostalgiaForInfinityX7(IStrategy):
     bbu_20 = self.safe_series(bb_upper_20, df.index)
 
     # Bollinger Bandwidth %
-    bbb_20 = self.safe_series(((bb_upper_20 - bb_lower_20) / pd.Series(bb_middle_20, index=df.index).replace(0, np.nan)) * 100.0, df.index)
-    #bbands_20_2 = ta.BBANDS(close, timeperiod=20)
+    bbb_20 = self.safe_series(
+      ((bb_upper_20 - bb_lower_20) / pd.Series(bb_middle_20, index=df.index).replace(0, np.nan)) * 100.0, df.index
+    )
+    # bbands_20_2 = ta.BBANDS(close, timeperiod=20)
 
-    #bbl_20 = self.safe_series(bbands_20_2["BBL_20_2.0"] if isinstance(bbands_20_2, pd.DataFrame) else None, df.index)
-    #bbu_20 = self.safe_series(bbands_20_2["BBU_20_2.0"] if isinstance(bbands_20_2, pd.DataFrame) else None, df.index)
-    #bbb_20 = self.safe_series(bbands_20_2["BBB_20_2.0"] if isinstance(bbands_20_2, pd.DataFrame) else None, df.index)
+    # bbl_20 = self.safe_series(bbands_20_2["BBL_20_2.0"] if isinstance(bbands_20_2, pd.DataFrame) else None, df.index)
+    # bbu_20 = self.safe_series(bbands_20_2["BBU_20_2.0"] if isinstance(bbands_20_2, pd.DataFrame) else None, df.index)
+    # bbb_20 = self.safe_series(bbands_20_2["BBB_20_2.0"] if isinstance(bbands_20_2, pd.DataFrame) else None, df.index)
 
     # BBANDS 40
     upper, middle, lower = ta.BBANDS(close, timeperiod=40, nbdevup=2.0, nbdevdn=2.0, matype=0)
     upper = pd.Series(upper, index=df.index, dtype=np.float64)
     middle = pd.Series(middle, index=df.index, dtype=np.float64)
     lower = pd.Series(lower, index=df.index, dtype=np.float64)
-    bb_range = pd.Series((upper - lower), index=df.index).replace(0, np.nan)  
+    bb_range = pd.Series((upper - lower), index=df.index).replace(0, np.nan)
     bb_middle = pd.Series(middle, index=df.index).replace(0, np.nan)
 
     # MFI
     mfi_14 = self.safe_series(ta.MFI(high, low, close, volume, timeperiod=14), df.index)
 
     # CMF
-    #cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), df.index)
+    # cmf_20 = self.safe_series(ta.CMF(high, low, close, volume, timeperiod=20), df.index)
     cmf_20 = self.safe_series(self.chaikin_money_flow(high, low, close, volume, timeperiod=20), df.index)
 
     # Williams %R
@@ -3904,21 +3914,23 @@ class NostalgiaForInfinityX7(IStrategy):
 
     aroon_up = self.safe_series(pd.Series(aroon_up, index=df.index, dtype=np.float64), df.index)
     aroon_down = self.safe_series(pd.Series(aroon_down, index=df.index, dtype=np.float64), df.index)
-    #aroon = ta.AROON(high, low, timeperiod=14)
-    #aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, df.index)
-    #aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, df.index)
+    # aroon = ta.AROON(high, low, timeperiod=14)
+    # aroon_up = self.safe_series(aroon["AROONU_14"] if isinstance(aroon, pd.DataFrame) else None, df.index)
+    # aroon_down = self.safe_series(aroon["AROOND_14"] if isinstance(aroon, pd.DataFrame) else None, df.index)
 
     # STOCH RSI
-    stochrsi_k, stochrsi_d = ta.STOCHRSI(close,timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
+    stochrsi_k, stochrsi_d = ta.STOCHRSI(close, timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
     stochrsi_k = self.safe_series(pd.Series(stochrsi_k, index=df.index, dtype=np.float64), df.index)
 
-    #stochrsi = ta.STOCHRSI(close)
-    #stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, df.index)
+    # stochrsi = ta.STOCHRSI(close)
+    # stochrsi_k = self.safe_series(stochrsi["STOCHRSIk_14_14_3_3"] if isinstance(stochrsi, pd.DataFrame) else None, df.index)
 
     # KST
     kst = pta.kst(close)
 
-    kst_main = self.safe_series(kst["KST_10_15_20_30_10_10_10_15"] if isinstance(kst, pd.DataFrame) else None, df.index)
+    kst_main = self.safe_series(
+      kst["KST_10_15_20_30_10_10_10_15"] if isinstance(kst, pd.DataFrame) else None, df.index
+    )
     kst_signal = self.safe_series(kst["KSTs_9"] if isinstance(kst, pd.DataFrame) else None, df.index)
 
     # OBV
@@ -3947,7 +3959,6 @@ class NostalgiaForInfinityX7(IStrategy):
       "RSI_20": rsi_20,
       "RSI_3_change_pct": rsi_3.replace(0, np.nan).pct_change(fill_method=None) * 100.0,
       "RSI_14_change_pct": rsi_14.replace(0, np.nan).pct_change(fill_method=None) * 100.0,
-
       # EMA
       "EMA_3": ema_3,
       "EMA_9": ema_9,
@@ -4098,12 +4109,8 @@ class NostalgiaForInfinityX7(IStrategy):
     # -------------------------------------------------------------------------
 
     df.rename(
-        columns=lambda s: (
-            f"btc_{s}"
-            if s != "date"
-            else s
-        ),
-        inplace=True,
+      columns=lambda s: f"btc_{s}" if s != "date" else s,
+      inplace=True,
     )
 
     # -------------------------------------------------------------------------
@@ -4112,11 +4119,7 @@ class NostalgiaForInfinityX7(IStrategy):
 
     tok = time.perf_counter()
 
-    log.debug(
-        f"[{metadata['pair']}] "
-        f"btc_info_{btc_info_timeframe}_indicators took: "
-        f"{tok - tik:0.4f} seconds."
-    )
+    log.debug(f"[{metadata['pair']}] btc_info_{btc_info_timeframe}_indicators took: {tok - tik:0.4f} seconds.")
 
     return df
 
@@ -4124,18 +4127,15 @@ class NostalgiaForInfinityX7(IStrategy):
   # ---------------------------------------------------------------------------------------------
   def btc_info_switcher(self, btc_info_pair, btc_info_timeframe, metadata: dict) -> DataFrame:
     supported_timeframes = {
-        "1d",
-        "4h",
-        "1h",
-        "15m",
-        "5m",
+      "1d",
+      "4h",
+      "1h",
+      "15m",
+      "5m",
     }
 
     if btc_info_timeframe not in supported_timeframes:
-        raise RuntimeError(
-            f"{btc_info_timeframe} not supported "
-            f"as informative timeframe for BTC pair."
-        )
+      raise RuntimeError(f"{btc_info_timeframe} not supported as informative timeframe for BTC pair.")
 
     return self._btc_info_indicators(btc_info_pair, btc_info_timeframe, metadata)
 
@@ -4179,18 +4179,10 @@ class NostalgiaForInfinityX7(IStrategy):
     }
 
     if stake_currency in stable_currencies:
-      btc_info_pair = (
-        f"BTC/{stake_currency}:{stake_currency}"
-        if is_futures
-        else f"BTC/{stake_currency}"
-      )
+      btc_info_pair = f"BTC/{stake_currency}:{stake_currency}" if is_futures else f"BTC/{stake_currency}"
 
     else:
-      btc_info_pair = (
-        "BTC/USDT:USDT"
-        if is_futures
-        else "BTC/USDT"
-      )
+      btc_info_pair = "BTC/USDT:USDT" if is_futures else "BTC/USDT"
 
     # =========================================================================
     # PREBUILD DROP COLUMN MAPS
@@ -4199,10 +4191,7 @@ class NostalgiaForInfinityX7(IStrategy):
     full_ohlcv = ("date", "open", "high", "low", "close", "volume")
     partial_15m = ("date", "high", "low", "volume")
 
-    btc_drop_map = {
-      tf: [f"btc_{col}_{tf}" for col in full_ohlcv] + [f"date_{tf}"]
-      for tf in self.btc_info_timeframes
-    }
+    btc_drop_map = {tf: [f"btc_{col}_{tf}" for col in full_ohlcv] + [f"date_{tf}"] for tf in self.btc_info_timeframes}
 
     info_drop_map = {
       "1d": [f"{col}_1d" for col in full_ohlcv],
@@ -4216,7 +4205,6 @@ class NostalgiaForInfinityX7(IStrategy):
     # =========================================================================
 
     for btc_tf in self.btc_info_timeframes:
-
       btc_informative = self.btc_info_switcher(
         btc_info_pair,
         btc_tf,
@@ -4224,9 +4212,7 @@ class NostalgiaForInfinityX7(IStrategy):
       )
 
       if btc_informative.empty:
-        log.warning(
-          f"[{metadata['pair']}] BTC informative {btc_tf} dataframe EMPTY!"
-        )
+        log.warning(f"[{metadata['pair']}] BTC informative {btc_tf} dataframe EMPTY!")
         continue
 
       df = merge_informative_pair(
@@ -4239,10 +4225,7 @@ class NostalgiaForInfinityX7(IStrategy):
 
       cols_to_drop = btc_drop_map.get(btc_tf, [])
 
-      existing_cols = [
-        col for col in cols_to_drop
-        if col in df.columns
-      ]
+      existing_cols = [col for col in cols_to_drop if col in df.columns]
 
       if existing_cols:
         df.drop(
@@ -4259,7 +4242,7 @@ class NostalgiaForInfinityX7(IStrategy):
       # BUILD INFORMATIVE INDICATORS
       # ---------------------------------------------------------------------
 
-      info_indicators = self.info_switcher(metadata,info_tf)
+      info_indicators = self.info_switcher(metadata, info_tf)
       if debug:
         total_rows = len(info_indicators)
 
@@ -4270,15 +4253,9 @@ class NostalgiaForInfinityX7(IStrategy):
             nan_cols.append(c)
 
         if nan_cols:
-          log.warning(
-            f"[{metadata['pair']}] "
-            f"{info_tf} PRE-MERGE FULL NaN cols: {nan_cols}"
-          )
+          log.warning(f"[{metadata['pair']}] {info_tf} PRE-MERGE FULL NaN cols: {nan_cols}")
 
-        log.warning(
-          f"[{metadata['pair']}] "
-          f"{info_tf} informative rows: {total_rows}"
-        )
+        log.warning(f"[{metadata['pair']}] {info_tf} informative rows: {total_rows}")
 
       # ---------------------------------------------------------------------
       # EMPTY PROTECTION
@@ -4310,10 +4287,7 @@ class NostalgiaForInfinityX7(IStrategy):
         [f"{col}_{info_tf}" for col in full_ohlcv],
       )
 
-      existing_cols = [
-        col for col in cols_to_drop
-        if col in df.columns
-      ]
+      existing_cols = [col for col in cols_to_drop if col in df.columns]
 
       if existing_cols:
         df.drop(
@@ -4328,11 +4302,7 @@ class NostalgiaForInfinityX7(IStrategy):
       if debug:
         suffix = f"_{info_tf}"
 
-        merged_cols = [
-          col + suffix
-          for col in info_indicators.columns
-          if col + suffix in df.columns
-        ]
+        merged_cols = [col + suffix for col in info_indicators.columns if col + suffix in df.columns]
 
         for col in merged_cols:
           series = df[col]
@@ -4346,7 +4316,7 @@ class NostalgiaForInfinityX7(IStrategy):
             log.warning(f"[{metadata['pair']}] {col} ENTIRELY NaN!")
 
           # Inf values
-          if (pd.api.types.is_numeric_dtype(series) and np.isinf(series).any()):
+          if pd.api.types.is_numeric_dtype(series) and np.isinf(series).any():
             log.warning(f"[{metadata['pair']}] {col} contains INF values!")
 
     # =========================================================================
@@ -4364,23 +4334,16 @@ class NostalgiaForInfinityX7(IStrategy):
         log.warning(f"[{metadata['pair']}] Final dataframe index has DUPLICATES!")
 
       # Entirely NaN columns
-      all_nan_cols = [
-        col for col in df.columns
-        if df[col].isna().all()
-      ]
+      all_nan_cols = [col for col in df.columns if df[col].isna().all()]
 
       if all_nan_cols:
         log.warning(f"[{metadata['pair']}] Columns entirely NaN: {all_nan_cols}")
 
       # Infinite values
-      inf_cols = [
-        col for col in df.columns
-        if (pd.api.types.is_numeric_dtype(df[col]) and np.isinf(df[col]).any())
-      ]
+      inf_cols = [col for col in df.columns if (pd.api.types.is_numeric_dtype(df[col]) and np.isinf(df[col]).any())]
 
       if inf_cols:
         log.warning(f"[{metadata['pair']}] Columns containing inf: {inf_cols}")
-
 
     # df["zlma_50_1h"] = df["zlma_50_1h"].astype(np.float64).replace(to_replace=[np.nan, None], value=(0.0))
     # df["CTI_20_1d"] = df["CTI_20_1d"].astype(np.float64).replace(to_replace=[np.nan, None], value=(0.0))
@@ -11932,13 +11895,13 @@ class NostalgiaForInfinityX7(IStrategy):
     tok_after_protections = time.perf_counter()
     tok_total = time.perf_counter()
     log.debug(
-        f"[{metadata['pair']}] "
-        f"populate_indicators pre-protections: "
-        f"{tok_before_protections - tik:0.4f}s | "
-        f"protections: "
-        f"{tok_after_protections - tok_before_protections:0.4f}s | "
-        f"total: "
-        f"{tok_total - tik:0.4f}s"
+      f"[{metadata['pair']}] "
+      f"populate_indicators pre-protections: "
+      f"{tok_before_protections - tik:0.4f}s | "
+      f"protections: "
+      f"{tok_after_protections - tok_before_protections:0.4f}s | "
+      f"total: "
+      f"{tok_total - tik:0.4f}s"
     )
     tok = time.perf_counter()
     log.debug(f"[{metadata['pair']}] Populate indicators took a total of: {tok - tik:0.4f} seconds.")
